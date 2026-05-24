@@ -55,13 +55,15 @@ struct ExampleRender {
     nine_slices_atlas_texture_view: wgpu::TextureViewHandle
 
     nine_slice_pipeline_layout: wgpu::PipelineLayoutHandle
-    nine_slice_bind_group_layout: wgpu::BindGroupLayoutHandle
+    nine_slice_uniform_bind_group_layout: wgpu::BindGroupLayoutHandle
+    nine_slice_texture_bind_group_layout: wgpu::BindGroupLayoutHandle
 
     nine_slice_corners: wgpu::BufferHandle
     nine_slice_indices: wgpu::BufferHandle
 
     nine_slice_pipeline: wgpu::RenderPipelineHandle
-    nine_slice_bind_group: wgpu::BindGroupHandle
+    nine_slice_uniform_bind_group: wgpu::BindGroupHandle
+    nine_slice_texture_bind_group: wgpu::BindGroupHandle
 
     nine_slice_uniform_buffer: wgpu::BufferHandle
 
@@ -91,19 +93,25 @@ impl ExampleRender {
 
         nine_slice_uniform_buffer := wgpu::create_uniform_buffer(nine_slice_uniform, 'nine slice uniform')
 
-        nine_slice_bind_group_layout := wgpu::create_bind_group_layout([
+        nine_slice_uniform_bind_group_layout := wgpu::create_bind_group_layout([
             { binding: 0, ty: Buffer(Uniform) },
-            { binding: 1, ty: Texture },
-            { binding: 2, ty: Sampler }
-        ], 'nine slice bind group layout')
+        ], 'nine slice uniform bind group layout')
 
-        nine_slice_bind_group := wgpu::create_bind_group(nine_slice_bind_group_layout, [
+        nine_slice_texture_bind_group_layout := wgpu::create_bind_group_layout([
+            { binding: 0, ty: Texture },
+            { binding: 1, ty: Sampler }
+        ], 'nine slice texture bind group layout')
+
+        nine_slice_uniform_bind_group := wgpu::create_bind_group(nine_slice_uniform_bind_group_layout, [
             Buffer(nine_slice_uniform_buffer),
+        ], 'nine slice uniform bind group')
+
+        nine_slice_texture_bind_group := wgpu::create_bind_group(nine_slice_texture_bind_group_layout, [
             TextureView(nine_slices_atlas_texture_view),
             Sampler(nine_slice_sampler)
-        ], 'nine slice bind group')
+        ], 'nine slice texture bind group')
 
-        nine_slice_pipeline_layout := wgpu::create_pipeline_layout([nine_slice_bind_group_layout], 'nine slice pipeline layout')
+        nine_slice_pipeline_layout := wgpu::create_pipeline_layout([nine_slice_uniform_bind_group_layout, nine_slice_texture_bind_group_layout], 'nine slice pipeline layout')
 
         // Slot 0: Grid Corner Index
         nine_slice_corner_layout := wgpu::VertexBufferLayout {
@@ -179,8 +187,10 @@ impl ExampleRender {
             nine_slice_indices: nine_slice_indices
             nine_slice_instance_buffer: nine_slice_instance_buffer
             nine_slice_uniform_buffer: nine_slice_uniform_buffer
-            nine_slice_bind_group_layout: nine_slice_bind_group_layout
-            nine_slice_bind_group: nine_slice_bind_group
+            nine_slice_uniform_bind_group_layout: nine_slice_uniform_bind_group_layout
+            nine_slice_texture_bind_group_layout: nine_slice_texture_bind_group_layout
+            nine_slice_uniform_bind_group: nine_slice_uniform_bind_group
+            nine_slice_texture_bind_group: nine_slice_texture_bind_group
             nine_slice_pipeline_layout: nine_slice_pipeline_layout
             nine_slice_pipeline: nine_slice_pipeline
         }
@@ -249,7 +259,8 @@ impl ExampleRender {
             render_pass.depth_attachment = -1
 
             render_pass.set_pipeline(.nine_slice_pipeline)
-            render_pass.set_bind_group( group_index: 0, bind_group: .nine_slice_bind_group )
+            render_pass.set_bind_group( group_index: 0, bind_group: .nine_slice_uniform_bind_group )
+            render_pass.set_bind_group( group_index: 1, bind_group: .nine_slice_texture_bind_group )
             render_pass.set_vertex_buffer( slot: 0, vertex_buffer: .nine_slice_corners )
             render_pass.set_vertex_buffer( slot: 1, vertex_buffer: .nine_slice_instance_buffer )
             render_pass.set_index_buffer( .nine_slice_indices )
