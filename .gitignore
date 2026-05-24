@@ -1,0 +1,6 @@
+.DS_Store
+assets/bin
+scripts
+/.sprout-vendor/lily
+/sprout.lock
+/assets/textures/nine_slice.aseprite
